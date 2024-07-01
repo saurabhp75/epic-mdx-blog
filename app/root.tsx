@@ -14,6 +14,7 @@ import {
 	Scripts,
 	ScrollRestoration,
 	useLoaderData,
+	useLocation,
 	useMatches,
 	useSubmit,
 } from '@remix-run/react'
@@ -199,6 +200,34 @@ function App() {
 	const searchBar = isOnSearchPage ? null : <SearchBar status="idle" />
 	const allowIndexing = data.ENV.ALLOW_INDEXING !== 'false'
 	useToast(data.toast)
+
+	// Bypass everything for Keystatic routes
+	const location = useLocation()
+
+	if (location.pathname.startsWith('/keystatic')) {
+		return (
+			<html lang="en">
+				<head>
+					<ClientHintCheck nonce={nonce} />
+					<Meta />
+					<meta charSet="utf-8" />
+					<meta name="viewport" content="width=device-width,initial-scale=1" />
+					<Links />
+				</head>
+				<body>
+					<Outlet />
+					<script
+						nonce={nonce}
+						dangerouslySetInnerHTML={{
+							__html: `window.ENV = ${JSON.stringify({})}`,
+						}}
+					/>
+					<ScrollRestoration nonce={nonce} />
+					<Scripts nonce={nonce} />
+				</body>
+			</html>
+		)
+	}
 
 	return (
 		<Document
